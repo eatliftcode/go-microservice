@@ -1,17 +1,27 @@
 package main
 
 import (
+	"github.com/eatliftcode/go-microservice/handlers"
 	"log"
 	"net/http"
+	"os"
+	"time"
 )
 
 func main() {
-	http.HandleFunc("/", func(writer http.ResponseWriter, request *http.Request) {
-		log.Println("hello world")
-	})
+	logger := log.New(os.Stdout, "product-api", log.LstdFlags)
+	helloHandler := handlers.NewHello(logger)
 
-	http.HandleFunc("/goodbye", func(writer http.ResponseWriter, request *http.Request) {
-		log.Println("goodbye world")
-	})
-	http.ListenAndServe(":9090", nil)
+	sm := http.NewServeMux()
+	sm.Handle("/", helloHandler)
+
+	server := &http.Server{
+		Addr:         ":9090",
+		Handler:      sm,
+		IdleTimeout:  120 * time.Second,
+		ReadTimeout:  1 * time.Second,
+		WriteTimeout: 1 * time.Second,
+	}
+
+	server.ListenAndServe()
 }
